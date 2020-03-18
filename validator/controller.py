@@ -1,7 +1,7 @@
 import logging
 
 from config import check_list
-from resource.resource import KubernetesResource
+from resource.resource import NamespaceKubernetesResource
 from validator.base import ControllerResult
 
 from validator.pod import validate_pod
@@ -36,7 +36,7 @@ class Controller:
         return
 
 
-def create_validate_controllers(res: KubernetesResource):
+def create_validate_controllers(res: NamespaceKubernetesResource):
     from validator.controllers import DeploymentController, DaemonSetController, JobController, CronJobController, \
         StateSetController
     ctr = []
@@ -73,7 +73,7 @@ def validate_controller(c: Controller):
     )
 
 
-def validate_controllers(res: KubernetesResource):
+def validate_controllers(res: NamespaceKubernetesResource):
     ctr = create_validate_controllers(res)
     controllers_result = []
     for c in ctr:

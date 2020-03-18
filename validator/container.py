@@ -1,8 +1,9 @@
+from kubernetes.client import V1SecurityContext, V1PodSpec, V1PodSecurityContext
+
 from config import check_list
 from .resource import ResourceValidation
 from . import messages
 from kubernetes.client.models.v1_container import V1Container
-from kubernetes.client.models.v1_pod import V1Pod
 from .base import ContainerResult
 
 
@@ -11,7 +12,7 @@ class ContainerValidation(ResourceValidation):
         super().__init__()
         self.container: V1Container = container
         self.init = True
-        self.parent: V1Pod = parent
+        self.parent: V1PodSpec = parent
 
     def validate_resources(self):
         if not self.init:
@@ -107,6 +108,60 @@ class ContainerValidation(ResourceValidation):
                 cv.on_success(messages.HostNetworkSuccess, category, name)
 
         validate_host_port_set(self)
+
+    def validate_security(self):
+        category = messages.CategorySecurity
+        security_conf = check_list.get("security", None)
+        security_context = self.container.security_context
+        pod_security_context = self.parent.security_context
+        if not security_context:
+            security_context = V1SecurityContext()
+        if not pod_security_context:
+            pod_security_context = V1PodSecurityContext()
+
+        def validate_run_as_root_allowed(cv: ContainerValidation):
+            name = "runAsRootAllowed"
+            severity = security_conf.get(name, None)
+            success = False
+            if security_context.run_as_non_root or (
+                    security_context.run_as_user is not None and security_context.run_as_user > 0):
+                success = True
+            elif security_context.run_as_non_root is None and security_context.run_as_user is None:
+                success = pod_security_context.run_as_non_root or (
+                        pod_security_context.run_as_user is not None and pod_security_context.run_as_user > 0)
+            if success:
+                cv.on_success(messages.RunAsRootSuccess, category, name)
+            else:
+                cv.on_failure(messages.RunAsRootFailure, severity, category, name)
+
+        def validate_run_as_privileged(cv: ContainerValidation):
+            name = "runAsPrivileged"
+            severity = security_conf.get(name, None)
+            if security_context.privileged:
+                cv.on_failure(messages.RunAsPrivilegedFailure, severity, category, name)
+            else:
+                cv.on_success(messages.RunAsPrivilegedSuccess, category, name)
+
+        def validate_not_read_only_root_file_system(cv: ContainerValidation):
+            name = "notReadOnlyRootFileSystem"
+            severity = security_conf.get(name, None)
+            if security_context.read_only_root_filesystem:
+                cv.on_failure(messages.ReadOnlyFilesystemSuccess, severity, category, name)
+            else:
+                cv.on_success(messages.ReadOnlyFilesystemFailure, category, name)
+
+        def validate_privilege_escalation_allowed(cv: ContainerValidation):
+            name = "privilegeEscalationAllowed"
+            severity = security_conf.get(name, None)
+            if security_context.allow_privilege_escalation:
+                cv.on_failure(messages.PrivilegeEscalationFailure, severity, category, name)
+            else:
+                cv.on_success(messages.PrivilegeEscalationSuccess, category, name)
+
+        validate_run_as_root_allowed(self)
+        validate_run_as_privileged(self)
+        validate_not_read_only_root_file_system(self)
+        validate_privilege_escalation_allowed(self)
 
 
 def validate_container(con, parent):

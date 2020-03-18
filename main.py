@@ -1,15 +1,8 @@
-import click
-from resource.resource import fetch_kubernetes_resource
 from validator.validator import run_validate
-
-
-@click.command()
-@click.option('--config', default=None, help='config file path')
-def root(config):
-    k_resource = fetch_kubernetes_resource()
-    run_validate(k_resource)
-    print("result:")
-
+import urllib3
 
 if __name__ == '__main__':
-    root()
+    urllib3.disable_warnings()
+    host = "172.16.10.239"
+    token = "eyJhbGciOiJSUzI1NiIsImtpZCI6Im1ndnhLdGt0S2laYTdCdUxWcFc3SU1RN2FOcE5Tbmpia2JIYXpqNWJGcVUifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJrdWJlcm5ldGVzLWRhc2hib2FyZC10b2tlbi05d2dzdiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJrdWJlcm5ldGVzLWRhc2hib2FyZCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjNjZmUwNTkxLTYwM2ItNDVhNi04ZDAxLTVhZDQ2MjRlZWEyMSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTprdWJlcm5ldGVzLWRhc2hib2FyZCJ9.PVDQrpD_0bLIwDXbmPsL1EzEfwYtuRqsTUbpK81Su5k_V-v40UfE1ENAFjEyUdeGyzmGI4BpCZpaDNUZKQ4XdZYodYhB981zaA6GM93VSMrwdi2dl5Krjcfj5WcmqcbARcYZu2-9PHWh4UXQkYhaWLcZiM4VhiqFveXC4nMsC_AaALdAoiWYZ743RGdrs1w64rVSguLzZaVXDrFHRXz8cIOHNtzDuoznaXHD0k6g1Lz2cmAwi8dyHcy0LWiOMCZcIxcCXlNl-DyBSwF_plKtRgprjUJgY0zh4nBosz3y3zqKfW2K_hay4XazhvjzbFqQxGGy3RQXdsfCUaPq4HqQrw"
+    aaa = run_validate(host, token)

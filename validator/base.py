@@ -1,21 +1,6 @@
 from typing import Dict, List
 
-from resource.resource import KubernetesResource
-
-
-class ClusterInfo:
-    def __init__(self, res: KubernetesResource):
-        self.version = res.version
-        self.count = {
-            "nodes": len(res.nodes),
-            "pods": len(res.pods),
-            "namespaces": len(res.namespaces),
-            "deployments": len(res.deployments),
-            "statefulSets": len(res.stateful_sets),
-            "daemonSets": len(res.daemon_sets),
-            "jobs": len(res.jobs),
-            "cronJobs": len(res.cron_jobs),
-        }
+from resource.resource import NamespaceKubernetesResource
 
 
 class ResultMessage:
@@ -109,10 +94,22 @@ class ControllerResult:
         self.pod_result = pod_result
 
 
+class NamespaceInfo():
+    def __init__(self, namespace_resource: NamespaceKubernetesResource):
+        self.count = {
+            "pods": len(namespace_resource.pods),
+            "deployments": len(namespace_resource.deployments),
+            "statefulSets": len(namespace_resource.stateful_sets),
+            "daemonSets": len(namespace_resource.daemon_sets),
+            "jobs": len(namespace_resource.jobs),
+            "cronJobs": len(namespace_resource.cron_jobs),
+        }
+
+
 class NamespaceResult:
 
-    def __init__(self, name):
-        self.controller_results = []
+    def __init__(self, name, controller_results, info):
+        self.controller_results = controller_results
         self.name = name
 
     @property
@@ -130,8 +127,7 @@ class NamespaceResult:
 
 
 class ClusterResult:
-    def __init__(self, cluster_info, namespace_results):
-        self.cluster_info = cluster_info
+    def __init__(self, namespace_results):
         self.namespace_results = namespace_results
 
     @property
