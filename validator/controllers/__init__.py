@@ -1,0 +1,5 @@
+from validator.controllers.cron_job import CronJobController
+from validator.controllers.daemon_set import DaemonSetController
+from validator.controllers.deployment import DeploymentController
+from validator.controllers.job import JobController
+from validator.controllers.stateful_set import StateSetController

@@ -1,0 +1,30 @@
+resources:
+  cpuRequestsMissing: warning
+  cpuLimitsMissing: warning
+  memoryRequestsMissing: warning
+  memoryLimitsMissing: warning
+images:
+  tagNotSpecified: error
+  pullPolicyNotAlways: ignore
+healthChecks:
+  readinessProbeMissing: warning
+  livenessProbeMissing: warning
+networking:
+  hostNetworkSet: warning
+  hostPortSet: warning
+security:
+  hostIPCSet: error
+  hostPIDSet: error
+  notReadOnlyRootFileSystem: warning
+  privilegeEscalationAllowed: error
+  runAsRootAllowed: warning
+  runAsPrivileged: error
+controllers:
+  - Deployments
+  - StatefulSets
+  - DaemonSets
+  - CronJobs
+  - Jobs
+  - ReplicationControllers
+exemptions: []
+
