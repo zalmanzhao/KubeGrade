@@ -1,7 +1,7 @@
 from kubernetes.client import V1SecurityContext, V1PodSpec, V1PodSecurityContext
 
-from config import check_list
-from .resource import ResourceValidation
+from validator.config import check_list
+from validator.resource import ResourceValidation
 from . import messages
 from kubernetes.client.models.v1_container import V1Container
 from .base import ContainerResult
@@ -19,11 +19,10 @@ class ContainerValidation(ResourceValidation):
             return
         category = messages.CategoryResources
         res = self.container.resources
-        resource_conf = check_list.get("resource", None)
+        resource_conf = check_list.get("kube", None)
 
         def validate_cpu_request(cv: ContainerValidation):
             missing_name = "cpuRequestsMissing"
-            # range_name = "CPURequestRanges"
             if res.requests and res.requests.__contains__("cpu"):
                 cv.on_success(messages.CPURequestsLabel, category, missing_name)
             else:
@@ -32,15 +31,32 @@ class ContainerValidation(ResourceValidation):
 
         def validate_cpu_limits(cv: ContainerValidation):
             missing_name = "cpuLimitsMissing"
-            # range_name = "CPURequestRanges"
             if res.limits and res.limits.__contains__("cpu"):
                 cv.on_success(messages.CPULimitsLabel, category, missing_name)
             else:
                 severity = resource_conf.get(missing_name, None)
                 cv.on_failure(messages.CPULimitsFailure, severity, category, missing_name)
 
+        def validate_memory_request(cv: ContainerValidation):
+            missing_name = "memoryRequestsMissing"
+            if res.requests and res.requests.__contains__("memory"):
+                cv.on_success(messages.MemoryRequestsLabel, category, missing_name)
+            else:
+                severity = resource_conf.get(missing_name, None)
+                cv.on_failure(messages.MemoryRequestsFailure, severity, category, missing_name)
+
+        def validate_memory_limits(cv: ContainerValidation):
+            missing_name = "memoryLimitsMissing"
+            if res.limits and res.limits.__contains__("memory"):
+                cv.on_success(messages.MemoryLimitsLabel, category, missing_name)
+            else:
+                severity = resource_conf.get(missing_name, None)
+                cv.on_failure(messages.MemoryLimitsFailure, severity, category, missing_name)
+
         validate_cpu_request(self)
         validate_cpu_limits(self)
+        validate_memory_limits(self)
+        validate_memory_request(self)
 
     def validate_health_checks(self):
         category = messages.CategoryHealthChecks
@@ -146,9 +162,9 @@ class ContainerValidation(ResourceValidation):
             name = "notReadOnlyRootFileSystem"
             severity = security_conf.get(name, None)
             if security_context.read_only_root_filesystem:
-                cv.on_failure(messages.ReadOnlyFilesystemSuccess, severity, category, name)
-            else:
                 cv.on_success(messages.ReadOnlyFilesystemFailure, category, name)
+            else:
+                cv.on_failure(messages.ReadOnlyFilesystemSuccess, severity, category, name)
 
         def validate_privilege_escalation_allowed(cv: ContainerValidation):
             name = "privilegeEscalationAllowed"
@@ -170,4 +186,5 @@ def validate_container(con, parent):
     cv.validate_networking()
     cv.validate_health_checks()
     cv.validate_images()
+    cv.validate_security()
     return ContainerResult(con.name, cv.messages)

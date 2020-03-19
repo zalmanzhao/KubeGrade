@@ -1,6 +1,6 @@
-from validator.resource import ResourceValidation
+from .resource import ResourceValidation
 from kubernetes.client.models import V1PodSpec
-from config import check_list
+from validator.config import check_list
 from . import messages
 from .base import PodResult
 from .container import validate_container
@@ -29,9 +29,9 @@ class PodValidation(ResourceValidation):
             security_conf = check_list.get("security", None)
             severity = security_conf.get(name, None)
             if pv.pod.host_pid:
-                pv.on_failure(messages.HostIPCFailure, severity, category, name)
+                pv.on_failure(messages.HostPIDFailure, severity, category, name)
             else:
-                pv.on_success(messages.HostIPCSuccess, category, name)
+                pv.on_success(messages.HostPIDSuccess, category, name)
 
         validate_security_host_ipc_set(self)
         validate_security_host_pid_set(self)

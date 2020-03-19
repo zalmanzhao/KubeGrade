@@ -1,4 +1,4 @@
-from resource.resource import KubernetesResourceProvider
+from validator.kube.resource import KubernetesResourceProvider
 from validator.base import ClusterResult
 from validator.namespace import validate_namespaces
 

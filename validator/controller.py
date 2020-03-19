@@ -1,7 +1,7 @@
 import logging
 
-from config import check_list
-from resource.resource import NamespaceKubernetesResource
+from validator.config import check_list
+from validator.kube.resource import NamespaceKubernetesResource
 from validator.base import ControllerResult
 
 from validator.pod import validate_pod

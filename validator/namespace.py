@@ -1,7 +1,7 @@
 import logging
 import threading
 
-from resource.resource import KubernetesResourceProvider
+from validator.kube.resource import KubernetesResourceProvider
 from .base import NamespaceResult, NamespaceInfo
 from .controller import validate_controllers
 
@@ -15,7 +15,6 @@ def validate_namespace_resource(namespace, provider, results):
     controller_results = validate_controllers(namespace_resource)
     result = NamespaceResult(
         name=namespace,
-        info=NamespaceInfo(namespace_resource),
         controller_results=controller_results
     )
     results.append(result)

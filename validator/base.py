@@ -1,6 +1,8 @@
 from typing import Dict, List
+from validator.kube.resource import NamespaceKubernetesResource
+import json
 
-from resource.resource import NamespaceKubernetesResource
+__all__ = ["ResultSummary", "ClusterResultJsonEncoder"]
 
 
 class ResultMessage:
@@ -9,6 +11,25 @@ class ResultMessage:
         self.message = message
         self.type = type
         self.category = category
+
+
+def count_messages(messages: List[ResultMessage]):
+    from validator.resource import RESOURCE_VALIDATION_ERROR, RESOURCE_VALIDATION_WARNING, \
+        RESOURCE_VALIDATION_SUCCESS
+    by_category = dict()
+    for msg in messages:
+        category_data = CountSummary()
+        if msg.type == RESOURCE_VALIDATION_ERROR:
+            category_data.errors += 1
+        elif msg.type == RESOURCE_VALIDATION_WARNING:
+            category_data.warnings += 1
+        elif msg.type == RESOURCE_VALIDATION_SUCCESS:
+            category_data.successes += 1
+        if by_category.__contains__(msg.category):
+            by_category[msg.category].add(category_data)
+        else:
+            by_category[msg.category] = category_data
+    return ResultSummary(by_category)
 
 
 class CountSummary:
@@ -24,6 +45,10 @@ class CountSummary:
 
 
 class ResultSummary:
+
+    def __init__(self, category_summary: Dict[str, CountSummary]):
+        self.by_category = category_summary
+
     @property
     def totals(self):
         count = CountSummary()
@@ -31,16 +56,18 @@ class ResultSummary:
             count.add(self.by_category[k])
         return count
 
-    def __init__(self, category_summary: Dict[str, CountSummary]):
-        self.by_category = category_summary
-
     def add(self, res):
         if res is None:
             return
-        for k in self.by_category:
-            for j in res.by_category:
-                if k == j:
-                    self.by_category[k].add(res.by_category[j])
+        keys = set()
+        list(self.by_category.keys()).extend(list())
+        for k in self.by_category: keys.add(k)
+        for k in res.by_category: keys.add(k)
+        for key in keys:
+            if res.by_category.__contains__(key) and self.by_category.__contains__(key):
+                self.by_category[key].add(res.by_category[key])
+            elif res.by_category.__contains__(key):
+                self.by_category[key] = res.by_category[key]
 
 
 class ContainerResult:
@@ -50,24 +77,7 @@ class ContainerResult:
 
     @property
     def summary(self):
-        from validator.resource import RESOURCE_VALIDATION_ERROR, RESOURCE_VALIDATION_WARNING, \
-            RESOURCE_VALIDATION_SUCCESS
-        by_category = dict()
-        for msg in self.messages:
-            category_data = CountSummary()
-            if msg.type == RESOURCE_VALIDATION_ERROR:
-                category_data.errors += 1
-            elif msg.type == RESOURCE_VALIDATION_WARNING:
-                category_data.warnings += 1
-            elif msg.type == RESOURCE_VALIDATION_SUCCESS:
-                category_data.successes += 1
-            if by_category.__contains__(msg.category):
-                by_category[msg.category].add(category_data)
-            else:
-                by_category[msg.category] = category_data
-        return ResultSummary(
-            category_summary=by_category
-        )
+        return count_messages(self.messages)
 
 
 class PodResult:
@@ -77,12 +87,9 @@ class PodResult:
 
     @property
     def summary(self):
-        s = None
+        s = count_messages(self.messages)
         for cr in self.container_results:
-            if s is None:
-                s = cr.summary
-            else:
-                s.add(cr.summary)
+            s.add(cr.summary)
         return s
 
 
@@ -107,8 +114,7 @@ class NamespaceInfo():
 
 
 class NamespaceResult:
-
-    def __init__(self, name, controller_results, info):
+    def __init__(self, name, controller_results):
         self.controller_results = controller_results
         self.name = name
 
@@ -145,3 +151,58 @@ class ClusterResult:
         if self.summary:
             total = self.summary.totals.successes * 2 + self.summary.totals.warnings + self.summary.totals.errors * 2
             return (float(self.summary.totals.successes * 2) / total) * 100
+
+
+class ClusterResultJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, ClusterResult):
+            return {
+                "namespace_results": obj.namespace_results,
+                "score": obj.score,
+                "summary": obj.summary
+            }
+        if isinstance(obj, NamespaceResult):
+            return {
+                "controller_results": obj.controller_results,
+                "summary": obj.summary,
+                "name": obj.name
+            }
+        if isinstance(obj, ControllerResult):
+            return {
+                "name": obj.name,
+                "type": obj.type,
+                "namespace": obj.namespace,
+                "pod_result": obj.pod_result
+            }
+
+        if isinstance(obj, PodResult):
+            return {
+                "container_results": obj.container_results,
+                "summary": obj.summary,
+                "messages": obj.messages,
+            }
+        if isinstance(obj, ContainerResult):
+            return {
+                "messages": obj.messages,
+                "summary": obj.summary,
+                "name": obj.name
+            }
+        if isinstance(obj, ResultSummary):
+            return {
+                "totals": obj.totals,
+                "by_category": obj.by_category
+            }
+        if isinstance(obj, ResultMessage):
+            return {
+                "type": obj.type,
+                "category": obj.category,
+                "message": obj.message,
+                "id": obj.id
+            }
+        if isinstance(obj, CountSummary):
+            return {
+                "successes": obj.successes,
+                "errors": obj.errors,
+                "warnings": obj.warnings
+            }
+        return json.JSONEncoder.default(self, obj)

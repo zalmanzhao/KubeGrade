@@ -9,7 +9,7 @@ __default_check_list = {
         "runAsRootAllowed": "warning",
         "runAsPrivileged": "error",
     },
-    "resource": {
+    "kube": {
         "cpuRequestsMissing": "warning",
         "cpuLimitsMissing": "warning",
         "memoryRequestsMissing": "warning",
