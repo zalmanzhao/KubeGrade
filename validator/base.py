@@ -139,3 +139,9 @@ class ClusterResult:
             else:
                 s.add(cr.summary)
         return s
+
+    @property
+    def score(self):
+        if self.summary:
+            total = self.summary.totals.successes * 2 + self.summary.totals.warnings + self.summary.totals.errors * 2
+            return (float(self.summary.totals.successes * 2) / total) * 100
