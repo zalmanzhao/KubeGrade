@@ -7,7 +7,7 @@ setup(
     author="KubeOperator",
     author_email="support@fit2cloud.com",
     description="A python library for scoring kubernetes",
-    license="Apache License 2.0",
+    license="MIT License",
     url="https://github.com/KubeOperator/KubeGrade",
     packages=find_packages(),
     include_package_data=True,

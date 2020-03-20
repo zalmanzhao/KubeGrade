@@ -152,6 +152,36 @@ class ClusterResult:
             total = self.summary.totals.successes * 2 + self.summary.totals.warnings + self.summary.totals.errors * 2
             return (float(self.summary.totals.successes * 2) / total) * 100
 
+    @property
+    def grade(self):
+        score = self.score
+        if score >= 97:
+            return "A+"
+        elif score >= 93:
+            return "A"
+        elif score >= 90:
+            return "A-"
+        elif score >= 87:
+            return "B+"
+        elif score >= 83:
+            return "B"
+        elif score >= 80:
+            return "B-"
+        elif score >= 77:
+            return "C+"
+        elif score >= 77:
+            return "C"
+        elif score >= 77:
+            return "C-"
+        elif score >= 67:
+            return "D+"
+        elif score >= 63:
+            return "D"
+        elif score >= 60:
+            return "D-"
+        else:
+            return "F"
+
 
 class ClusterResultJsonEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -159,7 +189,8 @@ class ClusterResultJsonEncoder(json.JSONEncoder):
             return {
                 "namespace_results": obj.namespace_results,
                 "score": obj.score,
-                "summary": obj.summary
+                "summary": obj.summary,
+                "grade": obj.grade
             }
         if isinstance(obj, NamespaceResult):
             return {
