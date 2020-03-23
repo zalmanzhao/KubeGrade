@@ -1,8 +1,9 @@
+import datetime
 from typing import Dict, List
 from validator.kube.resource import NamespaceKubernetesResource
 import json
 
-__all__ = ["ResultSummary", "ClusterResultJsonEncoder"]
+__all__ = ["ResultSummary", "ClusterResult", "ClusterResultJsonEncoder", "ContainerResult"]
 
 
 class ResultMessage:
@@ -133,7 +134,8 @@ class NamespaceResult:
 
 
 class ClusterResult:
-    def __init__(self, namespace_results):
+    def __init__(self, namespace_results, created_time=datetime.datetime.now()):
+        self.created_time = created_time
         self.namespace_results = namespace_results
 
     @property
@@ -236,4 +238,7 @@ class ClusterResultJsonEncoder(json.JSONEncoder):
                 "errors": obj.errors,
                 "warnings": obj.warnings
             }
+
+        if isinstance(obj, datetime.datetime):
+            return obj.strftime("%Y-%m-%d %H:%M:%S")
         return json.JSONEncoder.default(self, obj)
