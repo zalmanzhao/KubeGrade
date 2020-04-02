@@ -123,7 +123,7 @@ class ContainerValidation(ResourceValidation):
             else:
                 cv.on_success(messages.HostNetworkSuccess, category, name)
 
-        validate_host_port_set(self)
+        ## validate_host_port_set(self)
 
     def validate_security(self):
         category = messages.CategorySecurity
@@ -175,7 +175,7 @@ class ContainerValidation(ResourceValidation):
                 cv.on_success(messages.PrivilegeEscalationSuccess, category, name)
 
         validate_run_as_root_allowed(self)
-        validate_run_as_privileged(self)
+        ## validate_run_as_privileged(self)
         validate_not_read_only_root_file_system(self)
         validate_privilege_escalation_allowed(self)
 

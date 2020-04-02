@@ -34,7 +34,7 @@ class PodValidation(ResourceValidation):
                 pv.on_success(messages.HostPIDSuccess, category, name)
 
         validate_security_host_ipc_set(self)
-        validate_security_host_pid_set(self)
+        ## validate_security_host_pid_set(self)
 
     def validate_networking(self):
         category = messages.CategoryNetworking
