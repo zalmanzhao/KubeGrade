@@ -175,9 +175,9 @@ class ContainerValidation(ResourceValidation):
                 cv.on_success(messages.PrivilegeEscalationSuccess, category, name)
 
         validate_run_as_root_allowed(self)
-        ## validate_run_as_privileged(self)
+        validate_run_as_privileged(self)
         validate_not_read_only_root_file_system(self)
-        validate_privilege_escalation_allowed(self)
+        ## validate_privilege_escalation_allowed(self)
 
 
 def validate_container(con, parent):

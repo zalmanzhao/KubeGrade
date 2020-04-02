@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="KubeGrade",
-    version="0.0.2",
+    version="0.0.4",
     author="KubeOperator",
     author_email="support@fit2cloud.com",
     description="A python library for scoring kubernetes",
